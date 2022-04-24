@@ -523,19 +523,19 @@ class Message
             if (!empty($parameters['charset']) && $parameters['charset'] !== self::$charset) {
                 $mb_converted = false;
                 if (function_exists('mb_convert_encoding')) {
-                    if (!in_array($parameters['charset'], mb_list_encodings())) {
+                    if (!in_array(strtoupper($parameters['charset']), array_map('strtoupper', mb_list_encodings()))) {
                         if ($structure->encoding === 0) {
                             $parameters['charset'] = 'US-ASCII';
-                        } else {
-                            $parameters['charset'] = 'UTF-8';
+                            $messageBody = @mb_convert_encoding($messageBody, self::$charset, strtoupper($parameters['charset']));
+                            $mb_converted = true;    
                         }
+                    } else {
+                        $messageBody = @mb_convert_encoding($messageBody, self::$charset, strtoupper($parameters['charset']));
+                        $mb_converted = true;
                     }
-
-                    $messageBody = @mb_convert_encoding($messageBody, self::$charset, $parameters['charset']);
-                    $mb_converted = true;
                 }
                 if (!$mb_converted) {
-                    $messageBodyConv = @iconv($parameters['charset'], self::$charset . self::$charsetFlag, $messageBody);
+                    $messageBodyConv = @iconv(strtoupper($parameters['charset']), self::$charset . self::$charsetFlag, $messageBody);
 
                     if ($messageBodyConv !== false) {
                         $messageBody = $messageBodyConv;
